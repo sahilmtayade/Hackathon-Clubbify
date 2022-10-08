@@ -29,7 +29,7 @@ for row in table.find_all('tr')[1:]:
     if topics[-1] == '':
         topics.pop()
     df.append({"name":club_name, "topics": topics}, ignore_index=True)
-display(df)
+print(df)
 
 
 # condensed_html = soup("tbody")
