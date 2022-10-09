@@ -400,6 +400,7 @@ sb.add_request_handler(EventsIntentHandler())
 sb.add_request_handler(MyInterestsIntentHandler())
 sb.add_request_handler(InputInterestsIntentHandler())
 sb.add_request_handler(DynamoTestIntentHandler())
+sb.add_request_handler(BeforeTimeIntentHandler())
 
 sb.add_request_handler(HelpIntentHandler())
 sb.add_request_handler(CancelOrStopIntentHandler())
