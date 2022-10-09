@@ -20,6 +20,9 @@ from ask_sdk_model import Response
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
 
+DEFAULT_MAX_LIMIT = 5
+topics_remapped = {"sports": "Sports and Recreation", "community service": "Community Service", "academic": "Academic/College"}
+
 client = boto3.client('dynamodb')
 
 class LaunchRequestHandler(AbstractRequestHandler):
@@ -154,17 +157,21 @@ class TopClubIntentHandler(AbstractRequestHandler):
 
     def handle(self, handler_input):
         # type: (HandlerInput) -> Response
-        # get the slots value x from handler_input, top x club
-        s = ask_utils.request_util.get_slot(handler_input, "x")
-        if s.value:
-            # display top x club
-            speak_output = "The top " + s.value + " clubs are"
-            # get top x clubs from the databse based on user interest
-            
+        # get the slots value numClubs from handler_input, top numClubs club
+        numClubs = ask_utils.request_util.get_slot(handler_input, "numClubs")
+        if not numClubs:
+            numClubs = DEFAULT_MAX_LIMIT
         else:
-            # default to display top 5 clubs
-            speak_output = "No value was provided so default to showing top 5 clubs"
-            # get top 5 clubs from the databse based on user interest
+            numClubs = int(numClubs.value)
+            
+        data = client.scan(
+            TableName='clubs',
+            Limit=numClubs
+        )
+
+        speak_output = ""
+        for club in data['Items']:
+            speak_output += club['club_name']['S'] + '\n'
 
         return (
             handler_input.response_builder
@@ -392,25 +399,32 @@ class TopicIntentHandler(AbstractRequestHandler):
     """Handler for Topic Intent."""
     def can_handle(self, handler_input):
         # type: (HandlerInput) -> bool
-        return ask_utils.is_intent_name("Topic Intent")(handler_input)
+        return ask_utils.is_intent_name("TopicIntent")(handler_input)
 
     def handle(self, handler_input):
         # type: (HandlerInput) -> Response
         input_topic = ask_utils.request_util.get_slot(handler_input, "topic").value
-        data = client.query(
+
+        # Remap product
+        if input_topic.lower() in topics_remapped:
+            input_topic = topics_remapped[input_topic.lower()]
+
+        data = client.scan(
             TableName='clubs',
-            FilterExpression='topics CONTAINS :topic',
-            ExpressionAttributeValues={'topic': {
+            FilterExpression='contains(topics,:topic)',
+            ExpressionAttributeValues={':topic': {
                 'S': input_topic
                 }},
             ProjectionExpression='club_name',
         )
-        dataStr = str(data)
+        speak_output = ""
+        for club in data['Items'][:5]:
+            speak_output += club['club_name']['S'] + '\n'
 
         return (
             handler_input.response_builder
-                .speak(dataStr)
-                .ask(dataStr)
+                .speak(speak_output)
+                .ask(speak_output)
                 .response
         )
 
