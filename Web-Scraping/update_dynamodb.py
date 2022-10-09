@@ -16,19 +16,18 @@ table = dynamodb.Table('clubs')
 # values will be set based on the response.
 print(table.creation_date_time)
 df = pd.read_csv("./Web-Scraping/club_data.csv")
-# with table.batch_writer() as batch:
-for index, row in df.iterrows():
-    name, day, time, statement, topics = row[1:]
-    pre = topics[1:-1].split(', ')
-    pre = [p[1:-1] for p in pre]
-    topics = set(pre)
-    print(topics)
-    
-        # batch.put_item(
-        #     Item={
-        #         'club_name': name,
-        #         'username': 'user' + str(i),
-        #         'first_name': 'unknown',
-        #         'last_name': 'unknown'
-        #     }
-        # )
+with table.batch_writer(overwrite_by_pkeys=['club_name', 'day']) as batch:
+    for index, row in df.iterrows():
+        name, day, time, statement, topics = row[1:]
+        pre = topics[1:-1].split(', ')
+        pre = [p[1:-1] for p in pre]
+        topics = set(pre)
+        batch.put_item(
+            Item={
+                'club_name': name,
+                'day': day,
+                'statement': statement,
+                'time': time,
+                'topics': topics
+            }
+        )
