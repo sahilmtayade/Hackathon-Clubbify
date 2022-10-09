@@ -182,6 +182,35 @@ class TopClubIntentHandler(AbstractRequestHandler):
                 .response
         )
 
+class DescribeClubIntentHandler(AbstractRequestHandler):
+    "Handler for DescribeClub Intent."
+    def can_handle(self, handler_input):
+        # type: (HandlerInput) -> bool
+        return ask_utils.is_intent_name("DescribeClub")(handler_input)
+
+    def handle(self, handler_input):
+        # type: (HandlerInput) -> Response
+        # get the slots value numClubs from handler_input, top numClubs club
+        club_name = ask_utils.request_util.get_slot(handler_input, "club_name")
+        data = client.query(
+            TableName= 'clubs',
+            KeyConditionExpression='club_name=:c',
+            ExpressionAttributeValues={
+                ':c': {'S': club_name},
+            },
+            ProjectionExpression='statement',
+        )
+
+        speak_output = ""
+        club = data['Items'][0]
+        speak_output += club['statement']['S']
+
+        return (
+            handler_input.response_builder
+                .speak(speak_output)
+                .ask(speak_output)
+                .response
+        )
 class EventsIntentHandler(AbstractRequestHandler):
     "Handler for Events Intent."
     def can_handle(self, handler_input):
@@ -502,6 +531,7 @@ sb.add_request_handler(AfterTimeIntentHandler())
 sb.add_request_handler(BetweenTimeIntentHandler())
 sb.add_request_handler(TopicIntentHandler())
 sb.add_request_handler(EventsTodayIntentHandler())
+sb.add_request_handler(DescribeClubIntentHandler())
 
 sb.add_request_handler(HelpIntentHandler())
 sb.add_request_handler(CancelOrStopIntentHandler())
