@@ -288,7 +288,7 @@ class BeforeTimeIntentHandler(AbstractRequestHandler):
         # type: (HandlerInput) -> Response
         # get the slots value x from handler_input, top x club
         s = ask_utils.request_util.get_slot(handler_input, "time")
-        time = s.value
+        time = ''.join(s.value.split(':'))
         curday = datetime.now().weekday() + 1
         if curday == 7:
             curday = 0
@@ -297,8 +297,8 @@ class BeforeTimeIntentHandler(AbstractRequestHandler):
             TableName='clubs',
             KeyConditionExpression='day=:d AND time<:t',
             ExpressionAttributeValues={
-                ':d': curday,
-                ':t': time,
+                ':d': {'N': str(curday)},
+                ':t': {'N': time},
             },
             ProjectionExpression='club_name',
         )
