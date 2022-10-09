@@ -4,6 +4,7 @@
 # Please visit https://alexa.design/cookbook for additional examples on implementing slots, dialog management,
 # session persistence, api calls, and more.
 # This sample is built using the handler classes approach in skill builder.
+from datetime import datetime
 import logging
 import boto3
 import ask_sdk_core.utils as ask_utils
@@ -287,7 +288,23 @@ class BeforeTimeIntentHandler(AbstractRequestHandler):
         # type: (HandlerInput) -> Response
         # get the slots value x from handler_input, top x club
         s = ask_utils.request_util.get_slot(handler_input, "time")
-        speak_output = f"You said {str(s)}"
+        time = s.value
+        curday = datetime.now().weekday() + 1
+        if curday == 7:
+            curday = 0
+        data = client.query(
+            IndexName= 'day-time-index',
+            TableName='clubs',
+            KeyConditionExpression='day=:d AND time<:t',
+            ExpressionAttributeValues={
+                ':d': curday,
+                ':t': time,
+            },
+            ProjectionExpression='club_name',
+        )
+        speak_output = ""
+        for club in data['items']:
+            speak_output += club['club_name']['S']
 
         return (
             handler_input.response_builder
