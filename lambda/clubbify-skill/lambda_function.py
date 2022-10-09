@@ -287,7 +287,7 @@ class BeforeTimeIntentHandler(AbstractRequestHandler):
         # type: (HandlerInput) -> Response
         # get the slots value x from handler_input, top x club
         s = ask_utils.request_util.get_slot(handler_input, "time")
-        speak_output = f"You said {s.time}"
+        speak_output = f"You said {str(s)}"
 
         return (
             handler_input.response_builder
