@@ -354,6 +354,47 @@ class BeforeTimeIntentHandler(AbstractRequestHandler):
                 .ask(speak_output)
                 .response
         )
+class BeforeTimeTopicIntentHandler(AbstractRequestHandler):
+    "Handler for BeforeTimeTopic Intent."
+    def can_handle(self, handler_input):
+        # type: (HandlerInput) -> bool
+        return ask_utils.is_intent_name("BeforeTimeTopic")(handler_input)
+
+    def handle(self, handler_input):
+        # type: (HandlerInput) -> Response
+        # get the slots value x from handler_input, top x club
+        s = ask_utils.request_util.get_slot(handler_input, "time")
+        time = ''.join(s.value.split(':'))
+        input_topic = ask_utils.request_util.get_slot(handler_input, "topic").value
+
+        curday = datetime.now().weekday() + 1
+        if curday == 7:
+            curday = 0
+        data = client.query(
+            IndexName= 'day-time-index',
+            TableName='clubs',
+            KeyConditionExpression='#da=:d AND #ti<:t',
+            ExpressionAttributeValues={
+                ':d': {'N': str(curday)},
+                ':t': {'N': time},
+                ':topic': {'S' : input_topic}
+            },
+            FilterExpression='contains(topics,:topic)',
+            ExpressionAttributeNames={'#da': 'day', '#ti': 'time'},
+            ProjectionExpression='club_name',
+        )
+        speak_output = ""
+        for club in data['Items'][:5]:
+            speak_output += club['club_name']['S'] + ',\n'
+
+        speak_output = speak_output[:len(speak_output)-2]
+
+        return (
+            handler_input.response_builder
+                .speak(speak_output)
+                .ask(speak_output)
+                .response
+        )
 class AfterTimeIntentHandler(AbstractRequestHandler):
     "Handler for AfterTime Intent."
     def can_handle(self, handler_input):
@@ -376,6 +417,46 @@ class AfterTimeIntentHandler(AbstractRequestHandler):
                 ':d': {'N': str(curday)},
                 ':t': {'N': time},
             },
+            ExpressionAttributeNames={'#da': 'day', '#ti': 'time'},
+            ProjectionExpression='club_name',
+        )
+        speak_output = ""
+        for club in data['Items'][:5]:
+            speak_output += club['club_name']['S'] + ',\n'
+
+        speak_output = speak_output[:len(speak_output)-2]
+
+        return (
+            handler_input.response_builder
+                .speak(speak_output)
+                .ask(speak_output)
+                .response
+        )
+class AfterTimeTopicIntentHandler(AbstractRequestHandler):
+    "Handler for AfterTimeTopic Intent."
+    def can_handle(self, handler_input):
+        # type: (HandlerInput) -> bool
+        return ask_utils.is_intent_name("AfterTimeTopic")(handler_input)
+
+    def handle(self, handler_input):
+        # type: (HandlerInput) -> Response
+        # get the slots value x from handler_input, top x club
+        s = ask_utils.request_util.get_slot(handler_input, "time")
+        time = ''.join(s.value.split(':'))
+        input_topic = ask_utils.request_util.get_slot(handler_input, "topic").value
+        curday = datetime.now().weekday() + 1
+        if curday == 7:
+            curday = 0
+        data = client.query(
+            IndexName= 'day-time-index',
+            TableName='clubs',
+            KeyConditionExpression='#da=:d AND #ti>=:t',
+            ExpressionAttributeValues={
+                ':d': {'N': str(curday)},
+                ':t': {'N': time},
+                ':topic': {'S' : input_topic}
+            },
+            FilterExpression='contains(topics,:topic)',
             ExpressionAttributeNames={'#da': 'day', '#ti': 'time'},
             ProjectionExpression='club_name',
         )
@@ -417,6 +498,49 @@ class BetweenTimeIntentHandler(AbstractRequestHandler):
                 ':t2': {'N': time2},
             },
             ExpressionAttributeNames={'#da': 'day', '#ti': 'time'},
+            ProjectionExpression='club_name',
+        )
+        speak_output = ""
+        for club in data['Items'][:5]:
+            speak_output += club['club_name']['S'] + ',\n'
+
+        speak_output = speak_output[:len(speak_output)-2]
+
+        return (
+            handler_input.response_builder
+                .speak(speak_output)
+                .ask(speak_output)
+                .response
+        )
+class BetweenTimeTopicIntentHandler(AbstractRequestHandler):
+    "Handler for BetweenTimeTopic Intent."
+    def can_handle(self, handler_input):
+        # type: (HandlerInput) -> bool
+        return ask_utils.is_intent_name("BetweenTimeTopic")(handler_input)
+
+    def handle(self, handler_input):
+        # type: (HandlerInput) -> Response
+        # get the slots value x from handler_input, top x club
+        s = ask_utils.request_util.get_slot(handler_input, "timeone")
+        time1 = ''.join(s.value.split(':'))
+        s = ask_utils.request_util.get_slot(handler_input, "timetwo")
+        time2 = ''.join(s.value.split(':'))
+        input_topic = ask_utils.request_util.get_slot(handler_input, "topic").value
+        curday = datetime.now().weekday() + 1
+        if curday == 7:
+            curday = 0
+        data = client.query(
+            IndexName= 'day-time-index',
+            TableName='clubs',
+            KeyConditionExpression='#da=:d AND #ti BETWEEN :t1 AND :t2',
+            ExpressionAttributeValues={
+                ':d': {'N': str(curday)},
+                ':t1': {'N': time1},
+                ':t2': {'N': time2},
+                ':topic': {'S' : input_topic}
+            },
+            ExpressionAttributeNames={'#da': 'day', '#ti': 'time'},
+            FilterExpression='contains(topics,:topic)',
             ProjectionExpression='club_name',
         )
         speak_output = ""
@@ -532,6 +656,9 @@ sb.add_request_handler(BetweenTimeIntentHandler())
 sb.add_request_handler(TopicIntentHandler())
 sb.add_request_handler(EventsTodayIntentHandler())
 sb.add_request_handler(DescribeClubIntentHandler())
+sb.add_request_handler(BeforeTimeTopicIntentHandler())
+sb.add_request_handler(AfterTimeTopicIntentHandler())
+sb.add_request_handler(BetweenTimeTopicIntentHandler())
 
 sb.add_request_handler(HelpIntentHandler())
 sb.add_request_handler(CancelOrStopIntentHandler())
