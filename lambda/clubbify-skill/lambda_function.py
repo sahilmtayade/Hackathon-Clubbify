@@ -7,6 +7,7 @@
 from datetime import datetime
 import logging
 import boto3
+from boto3.dynamodb.conditions import Attr
 import ask_sdk_core.utils as ask_utils
 
 from ask_sdk_core.skill_builder import SkillBuilder
@@ -313,6 +314,34 @@ class BeforeTimeIntentHandler(AbstractRequestHandler):
                 .ask(speak_output)
                 .response
         )
+
+class DynamoTestIntentHandler(AbstractRequestHandler):
+    """Handler for DynamoTest Intent."""
+    def can_handle(self, handler_input):
+        # type: (HandlerInput) -> bool
+        return ask_utils.is_intent_name("DynamoTest")(handler_input)
+
+    def handle(self, handler_input):
+        # type: (HandlerInput) -> Response
+        input_topic = ask_utils.request_util.get_slot(handler_input, "topic").value
+        data = client.query(
+            TableName='clubs',
+            FilterExpression='topics CONTAINS :topic',
+            ExpressionAttributeValues={'topic': {
+                'S': input_topic
+                }},
+            ProjectionExpression='club_name',
+        )
+        dataStr = str(data)
+
+        return (
+            handler_input.response_builder
+                .speak(dataStr)
+                .ask(dataStr)
+                .response
+        )
+
+
 # The SkillBuilder object acts as the entry point for your skill, routing all request and response
 # payloads to the handlers above. Make sure any new handlers or interceptors you've
 # defined are included below. The order matters - they're processed top to bottom.
