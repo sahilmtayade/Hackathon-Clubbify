@@ -24,7 +24,7 @@ with table.batch_writer(overwrite_by_pkeys=['club_name', 'day']) as batch:
         topics = set(pre)
         batch.put_item(
             Item={
-                'club_name': name,
+                'club_name': name.lower(),
                 'day': day,
                 'statement': statement,
                 'time': time,
