@@ -304,8 +304,81 @@ class BeforeTimeIntentHandler(AbstractRequestHandler):
             ProjectionExpression='club_name',
         )
         speak_output = ""
-        for club in data['items']:
-            speak_output += club['club_name']['S']
+        for club in data['items'][:5]:
+            speak_output += club['club_name']['S'] + '\n'
+
+        return (
+            handler_input.response_builder
+                .speak(speak_output)
+                .ask(speak_output)
+                .response
+        )
+class AfterTimeIntentHandler(AbstractRequestHandler):
+    "Handler for AfterTime Intent."
+    def can_handle(self, handler_input):
+        # type: (HandlerInput) -> bool
+        return ask_utils.is_intent_name("AfterTime")(handler_input)
+
+    def handle(self, handler_input):
+        # type: (HandlerInput) -> Response
+        # get the slots value x from handler_input, top x club
+        s = ask_utils.request_util.get_slot(handler_input, "time")
+        time = ''.join(s.value.split(':'))
+        curday = datetime.now().weekday() + 1
+        if curday == 7:
+            curday = 0
+        data = client.query(
+            IndexName= 'day-time-index',
+            TableName='clubs',
+            KeyConditionExpression='#da=:d AND #ti>=:t',
+            ExpressionAttributeValues={
+                ':d': {'N': str(curday)},
+                ':t': {'N': time},
+            },
+            ExpressionAttributeNames={'#da': 'day', '#ti': 'time'},
+            ProjectionExpression='club_name',
+        )
+        speak_output = ""
+        for club in data['items'][:5]:
+            speak_output += club['club_name']['S'] + '\n'
+
+        return (
+            handler_input.response_builder
+                .speak(speak_output)
+                .ask(speak_output)
+                .response
+        )
+class BetweenTimeIntentHandler(AbstractRequestHandler):
+    "Handler for BetweenTime Intent."
+    def can_handle(self, handler_input):
+        # type: (HandlerInput) -> bool
+        return ask_utils.is_intent_name("BetweenTime")(handler_input)
+
+    def handle(self, handler_input):
+        # type: (HandlerInput) -> Response
+        # get the slots value x from handler_input, top x club
+        s = ask_utils.request_util.get_slot(handler_input, "time1")
+        time1 = ''.join(s.value.split(':'))
+        s = ask_utils.request_util.get_slot(handler_input, "time2")
+        time2 = ''.join(s.value.split(':'))
+        curday = datetime.now().weekday() + 1
+        if curday == 7:
+            curday = 0
+        data = client.query(
+            IndexName= 'day-time-index',
+            TableName='clubs',
+            KeyConditionExpression='#da=:d AND #ti>=:t1 AND #ti<:t2',
+            ExpressionAttributeValues={
+                ':d': {'N': str(curday)},
+                ':t1': {'N': time1},
+                ':t2': {'N': time2},
+            },
+            ExpressionAttributeNames={'#da': 'day', '#ti': 'time'},
+            ProjectionExpression='club_name',
+        )
+        speak_output = ""
+        for club in data['items'][:5]:
+            speak_output += club['club_name']['S'] + '\n'
 
         return (
             handler_input.response_builder
