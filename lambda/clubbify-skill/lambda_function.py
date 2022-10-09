@@ -295,11 +295,12 @@ class BeforeTimeIntentHandler(AbstractRequestHandler):
         data = client.query(
             IndexName= 'day-time-index',
             TableName='clubs',
-            KeyConditionExpression='day=:d AND time<:t',
+            KeyConditionExpression='#da=:d AND #ti<:t',
             ExpressionAttributeValues={
                 ':d': {'N': str(curday)},
                 ':t': {'N': time},
             },
+            ExpressionAttributeNames={'#da': 'day', '#ti': 'time'},
             ProjectionExpression='club_name',
         )
         speak_output = ""
