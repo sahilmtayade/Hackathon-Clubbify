@@ -5,6 +5,7 @@
 # session persistence, api calls, and more.
 # This sample is built using the handler classes approach in skill builder.
 import logging
+import boto3
 import ask_sdk_core.utils as ask_utils
 
 from ask_sdk_core.skill_builder import SkillBuilder
@@ -14,8 +15,11 @@ from ask_sdk_core.handler_input import HandlerInput
 
 from ask_sdk_model import Response
 
+
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
+
+client = boto3.client('dynamodb')
 
 
 class LaunchRequestHandler(AbstractRequestHandler):
@@ -186,6 +190,26 @@ class TopClubIntentHandler(AbstractRequestHandler):
                 .response
         )
 
+class DynamoTestIntentHandler(AbstractRequestHandler):
+    """Handler for Top Club Intent."""
+    def can_handle(self, handler_input):
+        # type: (HandlerInput) -> bool
+        return ask_utils.is_intent_name("DynamoTest")(handler_input)
+
+    def handle(self, handler_input):
+        # type: (HandlerInput) -> Response
+        data = client.scan(
+            TableName='clubs',
+        )
+        dataStr = str(data)
+
+        return (
+            handler_input.response_builder
+                .speak(dataStr)
+                .ask(dataStr)
+                .response
+        )
+
 # The SkillBuilder object acts as the entry point for your skill, routing all request and response
 # payloads to the handlers above. Make sure any new handlers or interceptors you've
 # defined are included below. The order matters - they're processed top to bottom.
@@ -195,6 +219,7 @@ sb = SkillBuilder()
 
 sb.add_request_handler(LaunchRequestHandler())
 sb.add_request_handler(TopClubIntentHandler())
+sb.add_request_handler(DynamoTestIntentHandler())
 # sb.add_request_handler(HelloWorldIntentHandler())
 sb.add_request_handler(HelpIntentHandler())
 sb.add_request_handler(CancelOrStopIntentHandler())
