@@ -167,7 +167,7 @@ class TopClubIntentHandler(AbstractRequestHandler):
 
     def handle(self, handler_input):
         # type: (HandlerInput) -> Response
-        speak_output = "top club pls work"
+        # get the slots value x from handler_input, top x club
         s = ask_utils.request_util.get_slot(handler_input, "x")
         if s.value:
             # display top x club
@@ -178,6 +178,30 @@ class TopClubIntentHandler(AbstractRequestHandler):
             # default to display top 5 clubs
             speak_output = "No value was provided so default to showing top 5 clubs"
             # get top 5 clubs from the databse based on user interest
+
+        return (
+            handler_input.response_builder
+                .speak(speak_output)
+                .ask(speak_output)
+                .response
+        )
+
+class EventsIntentHandler(AbstractRequestHandler):
+    """Handler for Top Club Intent."""
+    def can_handle(self, handler_input):
+        # type: (HandlerInput) -> bool
+        return ask_utils.is_intent_name("events")(handler_input)
+
+    def handle(self, handler_input):
+        # type: (HandlerInput) -> Response
+        # get the variables from handler_input
+        # day (date)
+        d = ask_utils.request_util.get_slot(handler_input, "day")
+        # y (number of events)
+        y = ask_utils.request_util.get_slot(handler_input, "y")
+        # club name
+        clubName = ask_utils.request_util.get_slot(handler_input, "club")
+        # depending on how many variables are not null, filter the database to find the desired result using query
 
         return (
             handler_input.response_builder
