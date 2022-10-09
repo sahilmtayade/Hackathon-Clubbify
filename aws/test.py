@@ -6,8 +6,6 @@
 # This sample is built using the handler classes approach in skill builder.
 import logging
 import ask_sdk_core.utils as ask_utils
-# import library to filter out non-english words
-import enchant
 
 from ask_sdk_core.skill_builder import SkillBuilder
 from ask_sdk_core.dispatch_components import AbstractRequestHandler
@@ -20,7 +18,7 @@ logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
 
 # declare variable to hold filler words
-fillerWords = ['oh', 'um', 'uh', 'er', 'ah', 'like', 'well', 'so', 'right', 'literally', 'okay'
+fillerWords = ['oh', 'um', 'uh', 'er', 'ah', 'like', 'well', 'so', 'right', 'literally', 'okay']
 
 
 class LaunchRequestHandler(AbstractRequestHandler):
@@ -40,23 +38,6 @@ class LaunchRequestHandler(AbstractRequestHandler):
                 .ask(speak_output)
                 .response
         )
-
-# class HelloWorldIntentHandler(AbstractRequestHandler):
-#     """Handler for Hello World Intent."""
-#     def can_handle(self, handler_input):
-#         # type: (HandlerInput) -> bool
-#         return ask_utils.is_intent_name("HelloWorldIntent")(handler_input)
-
-#     def handle(self, handler_input):
-#         # type: (HandlerInput) -> Response
-#         speak_output = "Hello World!"
-
-#         return (
-#             handler_input.response_builder
-#                 .speak(speak_output)
-#                 # .ask("add a reprompt if you want to keep the session open for the user to respond")
-#                 .response
-#         )
 
 class CancelOrStopIntentHandler(AbstractRequestHandler):
     """Single handler for Cancel and Stop Intent."""
@@ -155,7 +136,7 @@ class HelpIntentHandler(AbstractRequestHandler):
 
     def handle(self, handler_input):
         # type: (HandlerInput) -> Response
-        speak_output = "You can say hello to me! How can I help?E"
+        speak_output = "You can say hello to me! How can I help?F"
 
         return (
             handler_input.response_builder
@@ -176,7 +157,7 @@ class TopClubIntentHandler(AbstractRequestHandler):
         s = ask_utils.request_util.get_slot(handler_input, "x")
         if s.value:
             # display top x club
-            speak_output = "The top" + s.value + "clubs are"
+            speak_output = "The top " + s.value + " clubs are"
             # get top x clubs from the databse based on user interest
             
         else:
@@ -207,6 +188,14 @@ class EventsIntentHandler(AbstractRequestHandler):
         # club name
         clubName = ask_utils.request_util.get_slot(handler_input, "club")
         # depending on how many variables are not null, filter the database to find the desired result using query
+        t = ""
+        if d.value:
+            t += d.value
+        if y.value:
+            t += y.value
+        if clubName.value:
+            t += clubName.value
+        speak_output = t
 
         return (
             handler_input.response_builder
@@ -215,61 +204,59 @@ class EventsIntentHandler(AbstractRequestHandler):
                 .response
         )
 
-class MyInterestsIntentHandler(AbstractRequestHandler):
-    "Handler for My Interests Intent."
-    def can_handle(self, handler_input):
-        # type: (HandlerInput) -> bool
-        return ask_utils.is_intent_name("myinterests")(handler_input)
+# class MyInterestsIntentHandler(AbstractRequestHandler):
+#     "Handler for My Interests Intent."
+#     def can_handle(self, handler_input):
+#         # type: (HandlerInput) -> bool
+#         return ask_utils.is_intent_name("myinterests")(handler_input)
 
-    def handle(self, handler_input):
-        # type: (HandlerInput) -> Response
-        # get see if user interests are stored in the database
-        # if so put it out
-        
-        # otherwise, say no interests are recorded
+#     def handle(self, handler_input):
+#         # type: (HandlerInput) -> Response
+#         # get see if user interests are stored in the database
+#         # if so put it out
 
-        return (
-            handler_input.response_builder
-                .speak(speak_output)
-                .ask(speak_output)
-                .response
-        )
+#         # otherwise, say no interests are recorded
 
-class InputInterestsIntentHandler(AbstractRequestHandler):
-    "Handler for Input Interests Intent."
-    def can_handle(self, handler_input):
-        # type: (HandlerInput) -> bool
-        return ask_utils.is_intent_name("inputinterests")(handler_input)
-    
-    # this function get the junk words out of the user input string
-    def filterString(iString):
-        # first get rid of all duplicates
-        r = set(iString.split())
-        # get a dictionary to check if a word is english word
-        dus = enchant.Dict("en_US")
-        # go through the set and remove any non-english words and filler words
-        for i in r:
-            if not d.check(i) or i in fillerWords:
-                r.remove(i)
-        # return the set
-        return r
-    def handle(self, handler_input):
-        # type: (HandlerInput) -> Response
-        # get the user inputed interests from handler_input
-        i = ask_utils.request_util.get_slot(handler_input, "interests")
-        # if the user inputed interests
-        if i.value:
-            # pass the string to another method that filters it down
-            # and store the filtered down list into an set
-            rSet = filterString(i.value)
-            # store that set in the database with user id
-            
-        return (
-            handler_input.response_builder
-                .speak(speak_output)
-                .ask(speak_output)
-                .response
-        )
+#         return (
+#             handler_input.response_builder
+#                 .speak(speak_output)
+#                 .ask(speak_output)
+#                 .response
+#         )
+
+# class InputInterestsIntentHandler(AbstractRequestHandler):
+#     "Handler for Input Interests Intent."
+#     def can_handle(self, handler_input):
+#         # type: (HandlerInput) -> bool
+#         return ask_utils.is_intent_name("inputinterests")(handler_input)
+
+#     # this function get the junk words out of the user input string
+#     def filterString(iString):
+#         # first get rid of all duplicates
+#         r = set(iString.split())
+#         # go through the set and remove any filler words
+#         for i in r:
+#             if i in fillerWords:
+#                 r.remove(i)
+#         # return the set
+#         return r
+#     def handle(self, handler_input):
+#         # type: (HandlerInput) -> Response
+#         # get the user inputed interests from handler_input
+#         i = ask_utils.request_util.get_slot(handler_input, "interests")
+#         # if the user inputed interests
+#         if i.value:
+#             # pass the string to another method that filters it down
+#             # and store the filtered down list into an set
+#             rSet = filterString(i.value)
+#             # store that set in the database with user id
+
+#         return (
+#             handler_input.response_builder
+#                 .speak(speak_output)
+#                 .ask(speak_output)
+#                 .response
+#         )
 
 
 # The SkillBuilder object acts as the entry point for your skill, routing all request and response
@@ -283,8 +270,8 @@ sb.add_request_handler(LaunchRequestHandler())
 # added handlers
 sb.add_request_handler(TopClubIntentHandler())
 sb.add_request_handler(EventsIntentHandler())
-sb.add_request_handler(MyInterestsIntentHandler())
-sb.add_request_handler(InputInterestsIntentHandler())
+# sb.add_request_handler(MyInterestsIntentHandler())
+# sb.add_request_handler(InputInterestsIntentHandler())
 # sb.add_request_handler(HelloWorldIntentHandler())
 sb.add_request_handler(HelpIntentHandler())
 sb.add_request_handler(CancelOrStopIntentHandler())
