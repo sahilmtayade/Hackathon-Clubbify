@@ -160,7 +160,7 @@ class HelpIntentHandler(AbstractRequestHandler):
         )
 
 class TopClubIntentHandler(AbstractRequestHandler):
-    """Handler for Top Club Intent."""
+    "Handler for Top Club Intent."
     def can_handle(self, handler_input):
         # type: (HandlerInput) -> bool
         return ask_utils.is_intent_name("topclub")(handler_input)
@@ -187,7 +187,7 @@ class TopClubIntentHandler(AbstractRequestHandler):
         )
 
 class EventsIntentHandler(AbstractRequestHandler):
-    """Handler for Top Club Intent."""
+    "Handler for Events Intent."
     def can_handle(self, handler_input):
         # type: (HandlerInput) -> bool
         return ask_utils.is_intent_name("events")(handler_input)
@@ -202,6 +202,26 @@ class EventsIntentHandler(AbstractRequestHandler):
         # club name
         clubName = ask_utils.request_util.get_slot(handler_input, "club")
         # depending on how many variables are not null, filter the database to find the desired result using query
+
+        return (
+            handler_input.response_builder
+                .speak(speak_output)
+                .ask(speak_output)
+                .response
+        )
+
+class MyInterestsIntentHandler(AbstractRequestHandler):
+    "Handler for My Interests Intent."
+    def can_handle(self, handler_input):
+        # type: (HandlerInput) -> bool
+        return ask_utils.is_intent_name("myinterests")(handler_input)
+
+    def handle(self, handler_input):
+        # type: (HandlerInput) -> Response
+        # get see if user interests are stored in the database
+        # if so put it out
+        
+        # otherwise, say no interests are recorded
 
         return (
             handler_input.response_builder
