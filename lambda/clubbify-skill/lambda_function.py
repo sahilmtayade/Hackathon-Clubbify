@@ -277,7 +277,24 @@ class DynamoTestIntentHandler(AbstractRequestHandler):
                 .response
         )
 
+class BeforeTimeIntentHandler(AbstractRequestHandler):
+    "Handler for BeforeTime Intent."
+    def can_handle(self, handler_input):
+        # type: (HandlerInput) -> bool
+        return ask_utils.is_intent_name("BeforeTime")(handler_input)
 
+    def handle(self, handler_input):
+        # type: (HandlerInput) -> Response
+        # get the slots value x from handler_input, top x club
+        s = ask_utils.request_util.get_slot(handler_input, "time")
+        speak_output = f"You said {s.time}"
+
+        return (
+            handler_input.response_builder
+                .speak(speak_output)
+                .ask(speak_output)
+                .response
+        )
 # The SkillBuilder object acts as the entry point for your skill, routing all request and response
 # payloads to the handlers above. Make sure any new handlers or interceptors you've
 # defined are included below. The order matters - they're processed top to bottom.
