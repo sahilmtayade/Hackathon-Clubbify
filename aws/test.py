@@ -6,6 +6,8 @@
 # This sample is built using the handler classes approach in skill builder.
 import logging
 import ask_sdk_core.utils as ask_utils
+# import library to filter out non-english words
+import enchant
 
 from ask_sdk_core.skill_builder import SkillBuilder
 from ask_sdk_core.dispatch_components import AbstractRequestHandler
@@ -16,6 +18,9 @@ from ask_sdk_model import Response
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
+
+# declare variable to hold filler words
+fillerWords = ['oh', 'um', 'uh', 'er', 'ah', 'like', 'well', 'so', 'right', 'literally', 'okay'
 
 
 class LaunchRequestHandler(AbstractRequestHandler):
@@ -230,6 +235,43 @@ class MyInterestsIntentHandler(AbstractRequestHandler):
                 .response
         )
 
+class InputInterestsIntentHandler(AbstractRequestHandler):
+    "Handler for Input Interests Intent."
+    def can_handle(self, handler_input):
+        # type: (HandlerInput) -> bool
+        return ask_utils.is_intent_name("inputinterests")(handler_input)
+    
+    # this function get the junk words out of the user input string
+    def filterString(iString):
+        # first get rid of all duplicates
+        r = set(iString.split())
+        # get a dictionary to check if a word is english word
+        dus = enchant.Dict("en_US")
+        # go through the set and remove any non-english words and filler words
+        for i in r:
+            if not d.check(i) or i in fillerWords:
+                r.remove(i)
+        # return the set
+        return r
+    def handle(self, handler_input):
+        # type: (HandlerInput) -> Response
+        # get the user inputed interests from handler_input
+        i = ask_utils.request_util.get_slot(handler_input, "interests")
+        # if the user inputed interests
+        if i.value:
+            # pass the string to another method that filters it down
+            # and store the filtered down list into an set
+            rSet = filterString(i.value)
+            # store that set in the database with user id
+            
+        return (
+            handler_input.response_builder
+                .speak(speak_output)
+                .ask(speak_output)
+                .response
+        )
+
+
 # The SkillBuilder object acts as the entry point for your skill, routing all request and response
 # payloads to the handlers above. Make sure any new handlers or interceptors you've
 # defined are included below. The order matters - they're processed top to bottom.
@@ -238,7 +280,11 @@ class MyInterestsIntentHandler(AbstractRequestHandler):
 sb = SkillBuilder()
 
 sb.add_request_handler(LaunchRequestHandler())
+# added handlers
 sb.add_request_handler(TopClubIntentHandler())
+sb.add_request_handler(EventsIntentHandler())
+sb.add_request_handler(MyInterestsIntentHandler())
+sb.add_request_handler(InputInterestsIntentHandler())
 # sb.add_request_handler(HelloWorldIntentHandler())
 sb.add_request_handler(HelpIntentHandler())
 sb.add_request_handler(CancelOrStopIntentHandler())
