@@ -305,7 +305,7 @@ class BeforeTimeIntentHandler(AbstractRequestHandler):
             ProjectionExpression='club_name',
         )
         speak_output = ""
-        for club in data['items'][:5]:
+        for club in data['Items'][:5]:
             speak_output += club['club_name']['S'] + '\n'
 
         return (
@@ -340,7 +340,7 @@ class AfterTimeIntentHandler(AbstractRequestHandler):
             ProjectionExpression='club_name',
         )
         speak_output = ""
-        for club in data['items'][:5]:
+        for club in data['Items'][:5]:
             speak_output += club['club_name']['S'] + '\n'
 
         return (
@@ -358,9 +358,9 @@ class BetweenTimeIntentHandler(AbstractRequestHandler):
     def handle(self, handler_input):
         # type: (HandlerInput) -> Response
         # get the slots value x from handler_input, top x club
-        s = ask_utils.request_util.get_slot(handler_input, "time1")
+        s = ask_utils.request_util.get_slot(handler_input, "timeone")
         time1 = ''.join(s.value.split(':'))
-        s = ask_utils.request_util.get_slot(handler_input, "time2")
+        s = ask_utils.request_util.get_slot(handler_input, "timetwo")
         time2 = ''.join(s.value.split(':'))
         curday = datetime.now().weekday() + 1
         if curday == 7:
@@ -368,7 +368,7 @@ class BetweenTimeIntentHandler(AbstractRequestHandler):
         data = client.query(
             IndexName= 'day-time-index',
             TableName='clubs',
-            KeyConditionExpression='#da=:d AND #ti>=:t1 AND #ti<:t2',
+            KeyConditionExpression='#da=:d AND #ti BETWEEN :t1 AND :t2',
             ExpressionAttributeValues={
                 ':d': {'N': str(curday)},
                 ':t1': {'N': time1},
@@ -378,7 +378,7 @@ class BetweenTimeIntentHandler(AbstractRequestHandler):
             ProjectionExpression='club_name',
         )
         speak_output = ""
-        for club in data['items'][:5]:
+        for club in data['Items'][:5]:
             speak_output += club['club_name']['S'] + '\n'
 
         return (
@@ -388,11 +388,11 @@ class BetweenTimeIntentHandler(AbstractRequestHandler):
                 .response
         )
 
-class DynamoTestIntentHandler(AbstractRequestHandler):
-    """Handler for DynamoTest Intent."""
+class TopicIntentHandler(AbstractRequestHandler):
+    """Handler for Topic Intent."""
     def can_handle(self, handler_input):
         # type: (HandlerInput) -> bool
-        return ask_utils.is_intent_name("DynamoTest")(handler_input)
+        return ask_utils.is_intent_name("Topic Intent")(handler_input)
 
     def handle(self, handler_input):
         # type: (HandlerInput) -> Response
@@ -432,6 +432,7 @@ sb.add_request_handler(DynamoTestIntentHandler())
 sb.add_request_handler(BeforeTimeIntentHandler())
 sb.add_request_handler(AfterTimeIntentHandler())
 sb.add_request_handler(BetweenTimeIntentHandler())
+sb.add_request_handler(TopicIntentHandler())
 
 sb.add_request_handler(HelpIntentHandler())
 sb.add_request_handler(CancelOrStopIntentHandler())
