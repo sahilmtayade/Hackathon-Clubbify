@@ -304,7 +304,7 @@ class BeforeTimeIntentHandler(AbstractRequestHandler):
             ProjectionExpression='club_name',
         )
         speak_output = ""
-        for club in data['items']:
+        for club in data['Items']:
             speak_output += club['club_name']['S']
 
         return (
@@ -327,6 +327,7 @@ sb.add_request_handler(EventsIntentHandler())
 sb.add_request_handler(MyInterestsIntentHandler())
 sb.add_request_handler(InputInterestsIntentHandler())
 sb.add_request_handler(DynamoTestIntentHandler())
+sb.add_request_handler(BeforeTimeIntentHandler())
 
 sb.add_request_handler(HelpIntentHandler())
 sb.add_request_handler(CancelOrStopIntentHandler())
