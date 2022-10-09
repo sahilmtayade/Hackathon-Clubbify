@@ -171,7 +171,9 @@ class TopClubIntentHandler(AbstractRequestHandler):
 
         speak_output = ""
         for club in data['Items']:
-            speak_output += club['club_name']['S'] + '\n'
+            speak_output += club['club_name']['S'] + ',\n'
+
+        speak_output = speak_output[:len(speak_output)-2]
 
         return (
             handler_input.response_builder
@@ -313,7 +315,9 @@ class BeforeTimeIntentHandler(AbstractRequestHandler):
         )
         speak_output = ""
         for club in data['Items'][:5]:
-            speak_output += club['club_name']['S'] + '\n'
+            speak_output += club['club_name']['S'] + ',\n'
+
+        speak_output = speak_output[:len(speak_output)-2]
 
         return (
             handler_input.response_builder
@@ -348,7 +352,9 @@ class AfterTimeIntentHandler(AbstractRequestHandler):
         )
         speak_output = ""
         for club in data['Items'][:5]:
-            speak_output += club['club_name']['S'] + '\n'
+            speak_output += club['club_name']['S'] + ',\n'
+
+        speak_output = speak_output[:len(speak_output)-2]
 
         return (
             handler_input.response_builder
@@ -386,7 +392,9 @@ class BetweenTimeIntentHandler(AbstractRequestHandler):
         )
         speak_output = ""
         for club in data['Items'][:5]:
-            speak_output += club['club_name']['S'] + '\n'
+            speak_output += club['club_name']['S'] + ',\n'
+
+        speak_output = speak_output[:len(speak_output)-2]
 
         return (
             handler_input.response_builder
@@ -419,8 +427,9 @@ class TopicIntentHandler(AbstractRequestHandler):
         )
         speak_output = ""
         for club in data['Items'][:5]:
-            speak_output += club['club_name']['S'] + '\n'
+            speak_output += club['club_name']['S'] + ',\n'
 
+        speak_output = speak_output[:len(speak_output)-2]
         return (
             handler_input.response_builder
                 .speak(speak_output)
@@ -428,6 +437,51 @@ class TopicIntentHandler(AbstractRequestHandler):
                 .response
         )
 
+        # EventsToday
+class EventsTodayIntentHandler(AbstractRequestHandler):
+    "Handler for EventsToday Intent."
+    def can_handle(self, handler_input):
+        # type: (HandlerInput) -> bool
+        return ask_utils.is_intent_name("EventsToday")(handler_input)
+
+    def handle(self, handler_input):
+        # type: (HandlerInput) -> Response
+        # get the slots value x from handler_input, top x club
+        input_today = ask_utils.request_util.get_slot(handler_input, "today").value
+        date = str(input_today)
+        data = client.query(
+            TableName='events',
+            KeyConditionExpression='#d=:dateToday',
+            ExpressionAttributeValues={
+                ':dateToday': {'S': date},
+            },
+            ExpressionAttributeNames={'#d': 'date'},
+        )
+        speak_output = ""
+        for club in data['Items'][:5]:
+            timeInDigits = int(club['time']['N'])
+            minutes = timeInDigits % 100
+            hours = timeInDigits // 100
+            timeOfDay = "am"
+            if hours > 12:
+                hours = hours - 12
+                timeOfDay = "pm"
+            
+            if minutes < 10:
+                minutes = "0" + str(minutes)
+
+            timeStr = f'{hours}:{minutes}'
+            
+            speak_output += club['club']['S'] + ' meets at ' + timeStr + " " +timeOfDay + ',\n'
+        
+        speak_output = speak_output[:len(speak_output)-2]
+
+        return (
+            handler_input.response_builder
+                .speak(speak_output)
+                .ask(speak_output)
+                .response
+        )
 
 # The SkillBuilder object acts as the entry point for your skill, routing all request and response
 # payloads to the handlers above. Make sure any new handlers or interceptors you've
@@ -447,6 +501,7 @@ sb.add_request_handler(BeforeTimeIntentHandler())
 sb.add_request_handler(AfterTimeIntentHandler())
 sb.add_request_handler(BetweenTimeIntentHandler())
 sb.add_request_handler(TopicIntentHandler())
+sb.add_request_handler(EventsTodayIntentHandler())
 
 sb.add_request_handler(HelpIntentHandler())
 sb.add_request_handler(CancelOrStopIntentHandler())
