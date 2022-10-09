@@ -158,11 +158,11 @@ class TopClubIntentHandler(AbstractRequestHandler):
     def handle(self, handler_input):
         # type: (HandlerInput) -> Response
         # get the slots value numClubs from handler_input, top numClubs club
-        numClubs = ask_utils.request_util.get_slot(handler_input, "numClubs")
+        numClubs = ask_utils.request_util.get_slot(handler_input, "numClubs").value
         if not numClubs:
             numClubs = DEFAULT_MAX_LIMIT
         else:
-            numClubs = int(numClubs.value)
+            numClubs = int(numClubs)
             
         data = client.scan(
             TableName='clubs',
@@ -191,7 +191,8 @@ class DescribeClubIntentHandler(AbstractRequestHandler):
     def handle(self, handler_input):
         # type: (HandlerInput) -> Response
         # get the slots value numClubs from handler_input, top numClubs club
-        club_name = ask_utils.request_util.get_slot(handler_input, "club_name")
+        club_name = ask_utils.request_util.get_slot(handler_input, "club_name").value
+        club_name = ' '.join([c.capitalize() for c in club_name.split()])
         data = client.query(
             TableName= 'clubs',
             KeyConditionExpression='club_name=:c',
