@@ -17,10 +17,6 @@ from ask_sdk_model import Response
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
 
-# declare variable to hold filler words
-fillerWords = ['oh', 'um', 'uh', 'er', 'ah', 'like', 'well', 'so', 'right', 'literally', 'okay']
-
-
 class LaunchRequestHandler(AbstractRequestHandler):
     """Handler for Skill Launch."""
     def can_handle(self, handler_input):
@@ -204,59 +200,51 @@ class EventsIntentHandler(AbstractRequestHandler):
                 .response
         )
 
-# class MyInterestsIntentHandler(AbstractRequestHandler):
-#     "Handler for My Interests Intent."
-#     def can_handle(self, handler_input):
-#         # type: (HandlerInput) -> bool
-#         return ask_utils.is_intent_name("myinterests")(handler_input)
+class MyInterestsIntentHandler(AbstractRequestHandler):
+    "Handler for My Interests Intent."
+    def can_handle(self, handler_input):
+        # type: (HandlerInput) -> bool
+        return ask_utils.is_intent_name("myinterests")(handler_input)
 
-#     def handle(self, handler_input):
-#         # type: (HandlerInput) -> Response
-#         # get see if user interests are stored in the database
-#         # if so put it out
+    def handle(self, handler_input):
+        # type: (HandlerInput) -> Response
+        # get see if user interests are stored in the database
+        # if so put it out
+        speak_output = "myinterests basic test"
+        # otherwise, say no interests are recorded
 
-#         # otherwise, say no interests are recorded
+        return (
+            handler_input.response_builder
+                .speak(speak_output)
+                .ask(speak_output)
+                .response
+        )
 
-#         return (
-#             handler_input.response_builder
-#                 .speak(speak_output)
-#                 .ask(speak_output)
-#                 .response
-#         )
-
-# class InputInterestsIntentHandler(AbstractRequestHandler):
-#     "Handler for Input Interests Intent."
-#     def can_handle(self, handler_input):
-#         # type: (HandlerInput) -> bool
-#         return ask_utils.is_intent_name("inputinterests")(handler_input)
-
-#     # this function get the junk words out of the user input string
-#     def filterString(iString):
-#         # first get rid of all duplicates
-#         r = set(iString.split())
-#         # go through the set and remove any filler words
-#         for i in r:
-#             if i in fillerWords:
-#                 r.remove(i)
-#         # return the set
-#         return r
-#     def handle(self, handler_input):
-#         # type: (HandlerInput) -> Response
-#         # get the user inputed interests from handler_input
-#         i = ask_utils.request_util.get_slot(handler_input, "interests")
-#         # if the user inputed interests
-#         if i.value:
-#             # pass the string to another method that filters it down
-#             # and store the filtered down list into an set
-#             rSet = filterString(i.value)
-#             # store that set in the database with user id
-
-#         return (
-#             handler_input.response_builder
-#                 .speak(speak_output)
-#                 .ask(speak_output)
-#                 .response
-#         )
+class InputInterestsIntentHandler(AbstractRequestHandler):
+    "Handler for Input Interests Intent."
+    def can_handle(self, handler_input):
+        # type: (HandlerInput) -> bool
+        return ask_utils.is_intent_name("inputinterests")(handler_input)
+    
+    def handle(self, handler_input):
+        # type: (HandlerInput) -> Response
+        # get the user inputed interests from handler_input
+        i = ask_utils.request_util.get_slot(handler_input, "interests")
+        # if the user inputed interests
+        if i.value:
+            # pass the string to another method that filters it down
+            # and store the filtered down list into an set
+            # first get rid of all duplicates
+            r = set(i.value.split())
+            # store that set in the database with user id
+            speak_output = " ".join(list(r))
+        
+        return (
+            handler_input.response_builder
+                .speak(speak_output)
+                .ask(speak_output)
+                .response
+        )
 
 
 # The SkillBuilder object acts as the entry point for your skill, routing all request and response
@@ -270,9 +258,8 @@ sb.add_request_handler(LaunchRequestHandler())
 # added handlers
 sb.add_request_handler(TopClubIntentHandler())
 sb.add_request_handler(EventsIntentHandler())
-# sb.add_request_handler(MyInterestsIntentHandler())
-# sb.add_request_handler(InputInterestsIntentHandler())
-# sb.add_request_handler(HelloWorldIntentHandler())
+sb.add_request_handler(MyInterestsIntentHandler())
+sb.add_request_handler(InputInterestsIntentHandler())
 sb.add_request_handler(HelpIntentHandler())
 sb.add_request_handler(CancelOrStopIntentHandler())
 sb.add_request_handler(FallbackIntentHandler())
